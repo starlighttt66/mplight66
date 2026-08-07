@@ -17,12 +17,18 @@ def _player_instance():
 
 
 def prefetch(path: Optional[str | Path]):
-    if (path is not None):
-        _player_instance().command("loadfile", path, "replace")
-        _player_instance().pause = True
+    if path is None:
+        return
+    player = _player_instance()
+    player.play(str(Path(path).resolve()))
+    player.wait_until_playing(timeout=5)
+    player.pause = True
 
-def play(path: str | Path): 
+def play(path: str | Path):
     _player_instance().play(str(Path(path).resolve()))
+
+def pause():
+    _player_instance().pause = not _player_instance().pause
 
 def pause():
     _player_instance().pause = True
