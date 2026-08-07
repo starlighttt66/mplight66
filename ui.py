@@ -47,11 +47,33 @@ def main(page: ft.Page):
         on_click=add_tracks,
     )
 
+
     position_slider = ft.Slider(
         min=0,
         max=0,
         value=0,
         expand=True,
+    )
+
+    def toggle_play(e):
+        backend.pause_switch()
+
+        pause_switch_btn.icon = (
+            ft.Icons.PAUSE_CIRCLE_ROUNDED
+            if backend.is_playing()
+            else ft.Icons.PLAY_CIRCLE_ROUNDED
+        )
+
+        pause_switch_btn.update()
+
+
+    pause_switch_btn = ft.IconButton(
+        icon=ft.Icons.PLAY_CIRCLE_ROUNDED,
+        on_click=toggle_play,
+    )
+    stop_btn = ft.IconButton(
+        icon=ft.Icons.STOP,
+        on_click=lambda _: backend.stop(),
     )
 
     async def update_position():
@@ -69,7 +91,7 @@ def main(page: ft.Page):
         daemon=True,
     ).start()
 
-  
+
     page.add(
         ft.Row(
             [
@@ -79,6 +101,12 @@ def main(page: ft.Page):
         ),
         playlist,
         position_slider,
+        ft.Row(
+            [
+                pause_switch_btn,
+                stop_btn
+            ]
+        )
     )
     page.run_task(update_position)
 
