@@ -1,26 +1,88 @@
 from threading import Thread
+from pathlib import Path
 import flet as ft
-
+import asyncio
 import backend
 
 
 def main(page: ft.Page):
     page.title = "Player"
 
-    play_btn = ft.IconButton(
-        icon=ft.Icons.PLAY_ARROW,
-        on_click=lambda _: backend.pause(),
+    tracks: list[Path] = []
+
+    playlist = ft.ListView(
+        expand=True,
+        spacing=0,
     )
 
-    stop_btn = ft.IconButton(
-        icon=ft.Icons.STOP,
-        on_click=lambda _: backend.stop(),
+    def refresh_playlist():
+        playlist.controls.clear()
+
+        for track in tracks:
+            playlist.controls.append(
+                ft.ListTile(
+                    leading=ft.Icon(ft.Icons.MUSIC_NOTE),
+                    title=ft.Text(track.name),
+                    on_click=lambda _, path=track: (backend.play(path), print(path)),
+                )
+            )
+
+        page.update()
+
+    async def add_tracks(_):
+        files = await picker.pick_files(
+            allow_multiple=True
+        )
+        if files:
+            tracks.extend(Path(file.path) for file in files)
+            refresh_playlist()
+
+    picker = ft.FilePicker()
+
+    page.services.append(picker)
+
+    add_button = ft.IconButton(
+        icon=ft.Icons.ADD,
+        tooltip="Add tracks",
+        on_click=add_tracks,
     )
 
+    position_slider = ft.Slider(
+        min=0,
+        max=0,
+        value=0,
+        expand=True,
+    )
+
+    async def update_position():
+        while True:
+            position_slider.value = backend.position()
+            position_slider.max = backend.duration()
+
+            page.update()
+
+            await asyncio.sleep(0.25)
+
+
+    Thread(
+        target=update_position,
+        daemon=True,
+    ).start()
+
+  
     page.add(
-        ft.Row([play_btn, stop_btn])
+        ft.Row(
+            [
+                ft.Text("Playlist", expand=True),
+                add_button,
+            ]
+        ),
+        playlist,
+        position_slider,
     )
+    page.run_task(update_position)
 
-Thread(target= lambda : ( backend._player_instance(), backend.prefetch("assets/test.mp3")), daemon=True).start()
+
+Thread(target= lambda : backend._player_instance(), daemon=True).start()
 
 ft.run(main)
