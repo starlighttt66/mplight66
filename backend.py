@@ -27,7 +27,7 @@ def prefetch(path: Optional[str | Path]):
 def play(path: str | Path):
     _player_instance().play(str(Path(path).resolve()))
 
-def pause():
+def pause_switch():
     _player_instance().pause = not _player_instance().pause
 
 def pause():
