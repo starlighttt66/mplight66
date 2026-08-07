@@ -1,22 +1,27 @@
 from pathlib import Path
 
+from typing import Optional
 import mpv
 
 _player = None
 
 def _player_instance():
     global _player
-
     if _player is None:
         _player = mpv.MPV(
             video=False,
             audio_display="no",
             ytdl=False,
         )
-
     return _player
 
-def play(path: str | Path):
+
+def prefetch(path: Optional[str | Path]):
+    if (path is not None):
+        _player_instance().command("loadfile", path, "replace")
+        _player_instance().pause = True
+
+def play(path: str | Path): 
     _player_instance().play(str(Path(path).resolve()))
 
 def pause():
