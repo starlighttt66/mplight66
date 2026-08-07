@@ -1,3 +1,4 @@
+from threading import Thread
 import flet as ft
 
 import backend
@@ -8,7 +9,7 @@ def main(page: ft.Page):
 
     play_btn = ft.IconButton(
         icon=ft.Icons.PLAY_ARROW,
-        on_click=lambda _: backend.play("assets/test.mp3"),
+        on_click=lambda _: backend.pause(),
     )
 
     stop_btn = ft.IconButton(
@@ -20,6 +21,6 @@ def main(page: ft.Page):
         ft.Row([play_btn, stop_btn])
     )
 
+Thread(target= lambda : ( backend._player_instance(), backend.prefetch("assets/test.mp3")), daemon=True).start()
 
-backend._player_instance()
 ft.run(main)
